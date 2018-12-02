@@ -1,7 +1,6 @@
 from pgsql import conn, cur
 import bcrypt
 
-
 def do_the_login(user):
     cur.execute("select id, email, pass from _user")
     conn.commit()
