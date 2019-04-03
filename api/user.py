@@ -10,6 +10,7 @@ from utils.pgsql import conn, cur, create_table_pg, insert_table_pg, update_tabl
 from utils.api import add_assets, get_assets
 from utils.user import hash_password, verify_email
 from functools import wraps
+from utils import auth
 
 
 class User(Resource):
@@ -31,25 +32,11 @@ class User(Resource):
     except:
         pass
 
-    def requires_auth(f):
-        @wraps(f)
-        def decorated(*args, **kwargs):
-            # token = get_token_auth_header()
-            token = None
-            if not token:
-                return abort(401, 'We need token!')
-                # raise AuthError({
-                #     'code': 'authorization_header_missing',
-                #     'description': 'Authorization header is expected'
-                # }, 401)
-        return decorated
-
-    @requires_auth
+    @auth.requires_auth
     def get(self):
         data = {'name': 'davidism'}
         return jsonify(data)
 
-    @requires_auth
     def post(self):
         raw_data = request.get_json()
         if raw_data['email']:

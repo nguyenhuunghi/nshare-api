@@ -1,7 +1,4 @@
-import psycopg2
-
-conn = psycopg2.connect("host='ec2-54-197-253-122.compute-1.amazonaws.com' dbname='df3192mkr3k3ch' user='egtavjsibewktj' password='51fa705edf6ebe7f7e7e3f2223b9768386741a7d91bc731931820e2c7dc8f95d'")
-cur = conn.cursor()
+from config import conn, cur
 
 def create_table_pg(table_name, fields):
     sql_field = ''
@@ -21,8 +18,11 @@ def create_table_pg(table_name, fields):
             fields[field] = map_fields[type_of_field]
         new_fields.append(field + ' ' + fields[field])
     sql_field = ', '.join(new_fields)
-    cur.execute('CREATE TABLE {} ({});'.format(table_name, sql_field))
-    conn.commit()
+    try:
+        cur.execute('CREATE TABLE "{}" ({});'.format(table_name, sql_field))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
 
 def insert_table_pg(table_name, values):
     sql_field = ''
@@ -38,12 +38,10 @@ def insert_table_pg(table_name, values):
     sql_field = ', '.join(new_fields)
     sql_value = ', '.join(new_values)
     try:
-        print 'INSERT INTO {} ({}) VALUES ({});'.format(table_name, sql_field, sql_value)
         cur.execute('INSERT INTO {} ({}) VALUES ({});'.format(table_name, sql_field, sql_value))
         conn.commit()
     except Exception as e:
-        print e.message
-        return False
+        conn.rollback()
 
 def update_table_pg(table_name, values, places):
     sql_value = ''
@@ -54,6 +52,18 @@ def update_table_pg(table_name, values, places):
         if value != 'id':
             new_values.append(value + '+' + "'" + values[value] + "'")
     sql_value = ', '.join(new_values)
-    cur.execute('UPDATE TABLE {} SET {} WHERE {}'.format(table_name, sql_value, places))
-    conn.commit()
+    try:
+        cur.execute('UPDATE TABLE {} SET {} WHERE {}'.format(table_name, sql_value, places))
+        conn.commit()
+    except:
+        conn.rollback()
+
+def query_sql(sql):
+    try:
+        cur.execute(sql)
+        conn.commit()
+    except:
+        conn.rollback()
+    if 'INSERT' or 'UPDATE' not in sql:
+        return cur.fetchall()
 

@@ -1,10 +1,11 @@
 import sys, os, json, requests
+from datetime import datetime, timedelta
 from flask_restful import Resource
 from flask import Flask, request, abort, jsonify
 from utils.pgsql import conn, cur
-from utils import TRUE_WORDS, FALSE_WORDS, NONE_WORDS
+from utils import TRUE_WORDS, FALSE_WORDS, NONE_WORDS, JWT_SECRET, JWT_ALGORITHM,  auth
 from utils.user import hash_password
-import bcrypt
+import bcrypt, jwt
 
 class Login(Resource):
     def check_email_login(self, email=None):
@@ -21,7 +22,7 @@ class Login(Resource):
         return False
 
     def check_password(self, pwd=None, email=None):   
-        if pwd is None:
+        if pwd is None or email is None:
             return False
         sql = "SELECT password FROM {} WHERE email='{}';".format('_user', email)
         try:
@@ -49,22 +50,16 @@ class Login(Resource):
                 return abort(401, 'The database wrong!')
             if check_password not in TRUE_WORDS:
                 return abort(400, 'Your password is not correct!')
-        sql = "SELECT id, assets, full_name, email FROM {} WHERE email='{}';".format('_user', raw_data['email'])
+        sql = "SELECT id FROM {} WHERE email='{}';".format('_user', raw_data['email'])
         try:
             conn.commit()
         except:
             pass
         cur.execute(sql)
-        _user = cur.fetchall()[0]
-        user = {
-            'id': _user[0],
-            'assets': _user[1],
-            'full_name': _user[2],
-            'email': _user[3]
+        user = cur.fetchall()[0]
+        payload = {
+            'user_id': user[0]
         }
-        data = {
-            'response': 'Successful',
-            'user': user
-        }
-        return jsonify(data)
+        jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
+        return jsonify({'token': jwt_token.decode('utf-8')})
 
