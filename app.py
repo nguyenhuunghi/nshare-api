@@ -6,6 +6,7 @@ from api.user import User
 from api.assets import Assets
 from api.login import Login
 from api.task import Task, Field
+from api import blog, comment
 from utils import auth
 
 app = Flask(__name__)
@@ -25,6 +26,9 @@ api.add_resource(Assets, '/assets')
 api.add_resource(Login, '/login')
 api.add_resource(Task, '/task')
 api.add_resource(Field, '/field')
+api.add_resource(blog.Item, '/blog/<string:id>', endpoint='blog_item')
+api.add_resource(blog.Collection, '/blogs', endpoint='blog_collection')
+api.add_resource(comment.Item, '/comment/<string:id>', endpoint='comment')
 
 
 if __name__ == '__main__':

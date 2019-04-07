@@ -6,7 +6,8 @@ def create_table_pg(table_name, fields):
     map_fields = {
         'int': 'int',
         'float': 'float',
-        'string': 'varchar'
+        'string': 'varchar',
+        'array': 'integer ARRAY'
     }
     if table_name == 'user':
         table_name = '_user'
