@@ -5,7 +5,7 @@ from flask import Flask, request, abort, jsonify
 from utils.pgsql import conn, cur
 from utils import TRUE_WORDS, FALSE_WORDS, NONE_WORDS, JWT_SECRET, JWT_ALGORITHM,  auth
 from utils.user import hash_password
-import bcrypt, jwt
+import bcrypt
 
 class Login(Resource):
     def check_email_login(self, email=None):
@@ -60,6 +60,6 @@ class Login(Resource):
         payload = {
             'user_id': user[0]
         }
-        jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
-        return jsonify({'token': jwt_token.decode('utf-8')})
+        # jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
+        return jsonify({'token': ''})
 
