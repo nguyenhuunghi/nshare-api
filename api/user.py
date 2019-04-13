@@ -6,7 +6,7 @@ from flask_restful import Resource
 from flask_restful.utils import cors
 from utils import TRUE_WORDS, FALSE_WORDS, NONE_WORDS
 from utils.login import do_the_login, login_success
-from utils.pgsql import conn, cur, create_table_pg, insert_table_pg, update_table_pg
+from utils.pgsql import conn, cur, create_table_sql, insert_table_sql
 from utils.api import add_assets, get_assets
 from utils.user import hash_password, verify_email
 from functools import wraps
@@ -28,7 +28,7 @@ class User(Resource):
     }
 
     try:
-        create_table_pg(key,user)
+        create_table_sql(key,user)
     except:
         pass
 
@@ -52,7 +52,7 @@ class User(Resource):
             'assets': raw_data['assets'],
             'user_created': str(time.time())
         }
-        if insert_table_pg(self.key, user) == False: return abort(500, 'Create a new account wrong!')
+        if insert_table_sql(self.key, user) == False: return abort(500, 'Create a new account wrong!')
         try:
             cur.execute('SELECT id, full_name, email FROM _user WHERE email={};'.format(user['email']))
             user = cur.fetchone()

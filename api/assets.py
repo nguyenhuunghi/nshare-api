@@ -3,20 +3,24 @@ from flask_restful import Resource
 from flask import request, Response, abort, jsonify
 from utils.api import add_assets
 from utils import FALSE_WORDS
-from utils.pgsql import create_table_pg, insert_table_pg
+from utils.pgsql import create_table_sql, insert_table_sql, add_column_table_sql
 
 class Assets(Resource):
     key = 'assets'
-
     assets = {
+        'id': 'int',
         'link': 'string'
     }
-
     try:
-        create_table_pg(key, assets)
+        create_table_sql(key, assets)
+    except:
+        pass
+    try:
+        add_column_table_sql(key, assets)
     except:
         pass
 
+class Item(Assets):
     def post(self):
         data = request.get_json()
         response = add_assets(data['image'].split(',')[1])

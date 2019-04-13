@@ -5,7 +5,7 @@ from flask_restful import Resource
 from flask_restful.utils import cors
 from utils import TRUE_WORDS, FALSE_WORDS, NONE_WORDS
 from config import conn, cur 
-from utils.pgsql import create_table_pg, query_sql 
+from utils.pgsql import create_table_sql, query_sql, add_column_table_sql
 from utils.api import add_assets, get_assets
 from functools import wraps
 from utils import auth
@@ -17,10 +17,15 @@ class Blog(Resource):
         'date': 'string',
         'intro_text': 'string',
         'blog_text': 'string',
-        'comments': 'array'
+        'comments': 'array',
+        'assets': 'array'
     }
     try:
-        create_table_pg(key, blog)
+        create_table_sql(key, blog)
+    except:
+        pass
+    try:
+        add_column_table_sql(key, blog)
     except:
         pass
     # @auth.requires_auth
@@ -30,7 +35,7 @@ class Collection(Blog):
         sql = 'SELECT id, date, intro_text FROM {}'.format(self.key);
         blogs = []
         data = query_sql(sql)
-        if data not in NONE_WORDS:
+        if data:
             for d in data:
                 blogs.append({'id': d[0], 'date': d[1], 'intro_text': d[2]})
         return jsonify({'blogs': blogs})
@@ -40,7 +45,7 @@ class Item(Blog):
         sql = 'SELECT id, date, intro_text, blog_text, comments FROM {} WHERE id={}'.format(self.key, id);
         blog = {}
         data = query_sql(sql)
-        if data not in NONE_WORDS:
+        if data:
             for d in data:
                 blog = {'id': d[0], 'date': d[1], 'intro_text': d[2], 'blog_text': d[3], 'comments': d[4]}
         return jsonify({'blog': blog})

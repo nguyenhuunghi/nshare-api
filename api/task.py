@@ -5,7 +5,7 @@ from flask_restful import Resource
 from flask_restful.utils import cors
 from utils import TRUE_WORDS, FALSE_WORDS, NONE_WORDS
 from config import conn, cur 
-from utils.pgsql import create_table_pg, query_sql 
+from utils.pgsql import create_table_sql, query_sql 
 from utils.api import add_assets, get_assets
 from functools import wraps
 from utils import auth
@@ -19,7 +19,7 @@ class Task(Resource):
             'task': 'string'
         }
         try:
-            create_table_pg(key, task)
+            create_table_sql(key, task)
         except:
             pass
 
@@ -87,7 +87,7 @@ class Field(Resource):
             'name': 'string'
         }
         try:
-            create_table_pg(self.key, self.field)
+            create_table_sql(self.key, self.field)
         except:
             pass
 
@@ -111,5 +111,5 @@ class Field(Resource):
             sql = 'SELECT MAX(id) FROM {}'.format(self.key)
             last_id = query_sql(sql)
             if last_id not in NONE_WORDS:
-                create_table_pg('{}'.format(str(last_id) + '-'+ self.key), {'id': 'int', 'task': 'int'})
+                create_table_sql('{}'.format(str(last_id) + '-'+ self.key), {'id': 'int', 'task': 'int'})
         return jsonify({'message': 'successful'})
