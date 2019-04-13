@@ -32,7 +32,7 @@ class User(Resource):
     except:
         pass
 
-    @auth.requires_auth
+    # @auth.requires_auth
     def get(self):
         data = {'name': 'davidism'}
         return jsonify(data)
