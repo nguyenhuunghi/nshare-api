@@ -68,8 +68,7 @@ def insert_table_sql(table_name, values):
     sql_field = ', '.join(new_fields)
     sql_value = ', '.join(new_values)
     sql = "INSERT INTO {} ({}) VALUES ({});".format(table_name, sql_field, sql_value)
-    print sql
-    # query_sql_not_data(sql)
+    query_sql_not_data(sql)
 
 def update_table_sql(table_name, values, places):
     sql_value = ''
@@ -89,7 +88,8 @@ def query_sql(sql):
         conn.commit()
     except:
         conn.rollback()
-    return cur.fetchall()
+    data = cur.fetchall()
+    return data
 
 def insert_sql(sql, values):
     try:

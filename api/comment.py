@@ -31,8 +31,8 @@ class Comment(Resource):
 
 class Collection(Comment):
     def get(self, id):
-        limit = request.query_string.split('=')[1]
-        sql = 'SELECT id, date, comment_text, assets FROM {} ORDER BY id ASC LIMIT {}'.format(self.key + '_' + id, limit);
+        # limit = request.query_string.split('=')[1]
+        sql = 'SELECT id, date, comment_text, assets FROM {} ORDER BY id ASC'.format(self.key + '_' + id);
         data = query_sql(sql)
         comments = []
         if data:
@@ -65,12 +65,16 @@ class Item(Comment):
         raw_data = request.get_json()
         data = {}
         if raw_data:
-            if raw_data['assets']:
+            if raw_data.has_key('assets') and raw_data['assets']:
                 links = add_assets(raw_data['assets'])
                 if links and links not in NONE_WORDS:
                     data['assets'] = links
+            else:
+                data['assets'] = ['']
             if raw_data.has_key('comment_text'):
                 data['comment_text'] = raw_data['comment_text']
+            else:
+                raw_data['comment_text'] = ''
             data['date'] = str(int(time.time()))
         if not data:
             return abort(400, 'Can not insert a comment!')
