@@ -5,7 +5,7 @@ from flask_restful import Resource
 from flask_restful.utils import cors
 from utils import TRUE_WORDS, FALSE_WORDS, NONE_WORDS
 from config import conn, cur 
-from utils.pgsql import create_table_sql, query_sql 
+from utils.pgsql import create_table_sql, query_sql_fetchall 
 from utils.api import add_assets, get_assets
 from functools import wraps
 from utils import auth
@@ -26,7 +26,7 @@ class Task(Resource):
     # @auth.requires_auth
     def get(self):
         sql = 'SELECT id, task, field FROM {}'.format(self.key)
-        data = query_sql(sql)
+        data = query_sql_fetchall(sql)
         tasks = []
         if data not in NONE_WORDS:
             for t in data:
@@ -38,30 +38,30 @@ class Task(Resource):
         raw_data = request.get_json()
         if raw_data not in NONE_WORDS:
             sql = "INSERT INTO {} ({}, {}) VALUES ('{}', '{}');".format(self.key, 'task', 'field', raw_data['task'], 'todo')
-            query_sql(sql)
+            query_sql_fetchall(sql)
         return jsonify({'message': 'successful'}) 
 
     def put(self):
         raw_data = request.get_json()
         if raw_data not in NONE_WORDS:
             sql = "INSERT INTO \"{}\" ({}) VALUES ('{}')".format(str(raw_data['field']) + '-' + 'field', 'task', raw_data['task'])
-            query_sql(sql)
+            query_sql_fetchall(sql)
             field = None
             sql = 'SELECT field FROM "{}" WHERE id={}'.format(self.key, raw_data['task'])
-            field = query_sql(sql)
+            field = query_sql_fetchall(sql)
             if field and str(field) != str(raw_data['field']):
                 if str(field) != 'todo':
                     sql = "DELETE FROM \"{}\" WHERE task={}".format(str(field) + '-' + 'field', raw_data['task'])
-                    query_sql(sql)
+                    query_sql_fetchall(sql)
             sql = "UPDATE \"{}\" SET {}={} WHERE id='{}'".format(self.key, 'field', raw_data['field'], raw_data['task'])
-            query_sql(sql)
+            query_sql_fetchall(sql)
             tasks = get_field_by_id(str(raw_data['field']))
         return jsonify({'message': 'successful', 'task': tasks})
 
 def get_task_by_id(id):
     task = None
     sql = 'SELECT task FROM {} WHERE id={}'.format('task', id)
-    task = query_sql(sql)
+    task = query_sql_fetchall(sql)
     if task in NONE_WORDS:
         task = ''
     return task
@@ -69,7 +69,7 @@ def get_task_by_id(id):
 def get_field_by_id(id):
     data = None
     sql = 'SELECT task FROM "{}"'.format(str(id) + '-' + 'field')
-    data = query_sql(sql)
+    data = query_sql_fetchall(sql)
     tasks = []
     if data not in NONE_WORDS:
         for t in data:
@@ -94,7 +94,7 @@ class Field(Resource):
     def get(self):
         data = None
         sql = 'SELECT id, name FROM {}'.format(self.key)
-        data = query_sql(sql)
+        data = query_sql_fetchall(sql)
         fields = []
         if data not in NONE_WORDS:
             for f in data:
@@ -107,9 +107,9 @@ class Field(Resource):
         if raw_data not in NONE_WORDS:
             last_id = None
             sql = "INSERT INTO {} ({}) VALUES ('{}')".format(self.key, 'name', raw_data['field'])
-            query_sql(sql)
+            query_sql_fetchall(sql)
             sql = 'SELECT MAX(id) FROM {}'.format(self.key)
-            last_id = query_sql(sql)
+            last_id = query_sql_fetchall(sql)
             if last_id not in NONE_WORDS:
                 create_table_sql('{}'.format(str(last_id) + '-'+ self.key), {'id': 'int', 'task': 'int'})
         return jsonify({'message': 'successful'})

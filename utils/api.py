@@ -1,5 +1,6 @@
 import sys, os, json, requests
-from config import conn, cur, access_token
+from config import conn, cur, access_token, account_username
+from utils.pgsql import insert_table_sql
 from flask import request, abort
 
 def add_assets(file):
@@ -10,16 +11,18 @@ def add_assets(file):
         'Authorization': 'Bearer {}'.format(access_token)
     }
     data = None
-    links = []
+    link = None
     response = requests.request('POST', url, data=file, headers=headers)
     data = json.loads(response.text.encode('utf8'))
     if data['status'] != 200:
         return abort(400, 'Upload image failed!')
     link = data['data']['link']
-    links.append(str(link))
     if not link:
-        return abort(400, 'The assets not link!')
-    return links
+        return abort(400, 'Upload image failed without link!')
+    data = data['data']
+    data['datetime'] = str(data['datetime'])
+    insert_table_sql('assets', ['link', 'deletehash', 'datetime'], data)
+    return link
 
 def get_assets():
     # get image from imgur
@@ -29,5 +32,13 @@ def get_assets():
     assets = json.loads(response.text.encode('utf8'))
     return assets
 
+def delete_assets(deleteHash):
+    url = "https://api.imgur.com/3/account/{}/image/{}".format(account_username, deleteHash)
+    headers = {'Authorization': 'Bearer {}'.format(access_token)}
+    response = requests.request("DELETE", url, headers=headers)
+    response = json.loads(response.text.encode('utf8'))
+    return response
+    
 def query_string(request):
-    return request.query_string.split('&')
+    if request.query_string.split('&'): return request.query_string.split('&')
+    else: return None

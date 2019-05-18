@@ -3,10 +3,9 @@ from flask import Flask, jsonify, request
 from flask_restful import Api, Resource, reqparse
 from flask_cors import CORS, cross_origin
 from api.user import User
-from api.assets import Assets
 from api.login import Login
 from api.task import Task, Field
-from api import blog, comment
+from api import blog, comment, assets
 from utils import auth
 
 app = Flask(__name__)
@@ -21,10 +20,10 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 api = Api(app)
 # Controller API
 api.add_resource(User, '/user')
-api.add_resource(Assets, '/assets')
 api.add_resource(Login, '/login')
 api.add_resource(Task, '/task')
 api.add_resource(Field, '/field')
+api.add_resource(assets.Item, '/assets')
 api.add_resource(blog.Item, '/blog/<string:id>', endpoint='blog_item')
 api.add_resource(blog.Collection, '/blogs', endpoint='blog_collection')
 api.add_resource(comment.Item, '/comment/<string:id>', endpoint='comment_item')

@@ -9,16 +9,16 @@ class Assets(Resource):
     key = 'assets'
     assets = {
         'id': 'int',
-        'link': 'string'
+        'link': 'string',
+        'deletehash': 'string',
+        'datetime': 'string'
     }
-    try:
-        create_table_sql(key, assets)
-    except:
-        pass
-    try:
-        add_column_table_sql(key, assets)
-    except:
-        pass
+    try: create_table_sql(key, assets)
+    except: pass
+    try: add_column_table_sql(key, assets)
+    except: pass
+    try: modify_data_type_table_sql('{}'.format(key + '_1'), comment)
+    except: pass
 
 class Item(Assets):
     def post(self):
@@ -32,5 +32,5 @@ class Item(Assets):
         # if insert_table_pg(self.key, data) in FALSE_WORDS:
         #     return abort(401, 'Upload image failed!')
         return jsonify(data)
-
+        
         

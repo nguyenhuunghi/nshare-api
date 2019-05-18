@@ -5,7 +5,7 @@ from flask_restful import Resource
 from flask_restful.utils import cors
 from utils import TRUE_WORDS, FALSE_WORDS, NONE_WORDS
 from config import conn, cur 
-from utils.pgsql import create_table_sql, query_sql, query_sql_not_data, add_column_table_sql, insert_table_sql, insert_sql
+from utils.pgsql import create_table_sql, query_sql_fetchall, query_sql, add_column_table_sql, insert_table_sql, insert_sql, update_table_sql, modify_data_type_table_sql
 from utils.api import add_assets, get_assets
 from functools import wraps
 from utils import auth
@@ -18,22 +18,20 @@ class Comment(Resource):
         'id': 'int',
         'date': 'string',
         'comment_text': 'string',
-        'assets': 'string_array'
+        'assets': 'string'
     }
-    try:
-        create_table_sql('{}'.format(key + '_1'), comment)
-    except:
-        pass
-    try:
-        add_column_table_sql('{}'.format(key + '_1'), comment)
-    except:
-        pass
+    try: create_table_sql('{}'.format(key + '_1'), comment)
+    except: pass
+    try: add_column_table_sql('{}'.format(key + '_1'), comment)
+    except: pass
+    try: modify_data_type_table_sql('{}'.format(key + '_1'), comment)
+    except: pass
 
 class Collection(Comment):
     def get(self, id):
         # limit = request.query_string.split('=')[1]
         sql = 'SELECT id, date, comment_text, assets FROM {} ORDER BY id ASC'.format(self.key + '_' + id);
-        data = query_sql(sql)
+        data = query_sql_fetchall(sql)
         comments = []
         if data:
             for val in data:
@@ -45,11 +43,10 @@ class Collection(Comment):
                 })
         return jsonify({'comments': comments})
         
-
 class Item(Comment):
     def get(self, id):
         sql = 'SELECT id, "date", comment_text, assets FROM {} WHERE id={}'.format(self.key, id)
-        data = query_sql(sql)
+        data = query_sql_fetchall(sql)
         comment = {}
         if data:
             for val in data:
@@ -65,12 +62,12 @@ class Item(Comment):
         raw_data = request.get_json()
         data = {}
         if raw_data:
-            if raw_data.has_key('assets') and raw_data['assets']:
-                links = add_assets(raw_data['assets'])
-                if links and links not in NONE_WORDS:
-                    data['assets'] = links
+            if raw_data.has_key('assets') and raw_data.get('assets', None):
+                link = add_assets(raw_data['assets']) 
+                if link: data['assets'] = link
+                else: data['assets'] = ''
             else:
-                data['assets'] = ['']
+                data['assets'] = ''
             if raw_data.has_key('comment_text'):
                 data['comment_text'] = raw_data['comment_text']
             else:
@@ -78,25 +75,31 @@ class Item(Comment):
             data['date'] = str(int(time.time()))
         if not data:
             return abort(400, 'Can not insert a comment!')
-        # insert_table_sql(self.key + '_' + id, data)
-        fields = ', '.join(['date', 'comment_text', 'assets'])
+        fields = ['date', 'comment_text', 'assets']
+        table_name = self.key + '_' + id
+        insert_table_sql(table_name, fields, data)
+        # fields = ', '.join(['date', 'comment_text', 'assets'])
         # values = (data['date'], data['comment_text'])
-        sql = "INSERT INTO {} ({}) VALUES ('{}', '{}', ARRAY {});".format(self.key + '_' + id, fields, data['date'], data['comment_text'], data['assets'])
-        query_sql_not_data(sql)
+        # sql = "INSERT INTO {} ({}) VALUES ('{}', '{}', ARRAY {});".format(self.key + '_' + id, fields, data['date'], data['comment_text'], data['assets'])
+        # query_sql(sql)
         return jsonify({'message': 'successful'})
 
     def put(self, id):
         raw_data = request.get_json()
         if raw_data and raw_data.has_key('comment_text') and raw_data.has_key('blog_id'):
-            sql = "UPDATE {} SET {}='{}' WHERE id='{}';".format(self.key + '_' + str(raw_data['blog_id']), 'comment_text', str(raw_data['comment_text']), id)
-            query_sql_not_data(sql)
+            raw_data['date'] =  str(int(time.time()))
+            # sql = "UPDATE {} SET {}='{}',{}='{}' WHERE id='{}';".format(self.key + '_' + str(raw_data['blog_id']), 'comment_text', str(raw_data['comment_text']), 'date', str(time.time()), id)
+            # query_sql(sql)
+            fields = ['date', 'comment_text']
+            table_name = self.key + '_' + str(raw_data['blog_id'])
+            update_table_sql(table_name, fields, raw_data, field_condition='id', value_condition=id)
         return jsonify({'message': 'successful'})
 
     def delete(self, id):
         raw_data = query_string(request)
         if raw_data:
             sql = 'DELETE FROM {} WHERE id={};'.format(self.key + '_' + str(raw_data[0].split('=')[1]), id)
-            query_sql_not_data(sql)
+            query_sql(sql)
         else:
             return abort(400, 'Something wrong')
         return jsonify({'message': 'successful'})
