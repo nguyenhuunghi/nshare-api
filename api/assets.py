@@ -2,23 +2,17 @@ import sys, os, json, requests
 from flask_restful import Resource
 from flask import request, Response, abort, jsonify
 from utils.api import add_assets
-from utils import FALSE_WORDS
-from utils.pgsql import create_table_sql, insert_table_sql, add_column_table_sql
+from utils import pgsql, db, FALSE_WORDS
 
 class Assets(Resource):
-    key = 'assets'
-    assets = {
+    __table__ = 'assets'
+    __column__ = {
         'id': 'int',
         'link': 'string',
         'deletehash': 'string',
         'datetime': 'string'
     }
-    try: create_table_sql(key, assets)
-    except: pass
-    try: add_column_table_sql(key, assets)
-    except: pass
-    try: modify_data_type_table_sql('{}'.format(key + '_1'), comment)
-    except: pass
+    # pgsql.init_db(__tablename__, columns)
 
 class Item(Assets):
     def post(self):

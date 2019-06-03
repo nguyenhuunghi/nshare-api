@@ -4,8 +4,6 @@ from flask import Flask, abort, request, jsonify, Response, make_response
 from flask_restful import Resource
 from flask_restful.utils import cors
 from utils import TRUE_WORDS, FALSE_WORDS, NONE_WORDS
-from config import conn, cur 
-from utils.pgsql import create_table_sql, query_sql_fetchall 
 from utils.api import add_assets, get_assets
 from functools import wraps
 from utils import auth
@@ -18,10 +16,8 @@ class Task(Resource):
             'field': 'int',
             'task': 'string'
         }
-        try:
-            create_table_sql(key, task)
-        except:
-            pass
+
+        # pgsql.init_db(__tablename__, columns)
 
     # @auth.requires_auth
     def get(self):

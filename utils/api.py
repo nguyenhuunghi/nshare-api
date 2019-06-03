@@ -1,6 +1,5 @@
 import sys, os, json, requests
-from config import conn, cur, access_token, account_username
-from utils.pgsql import insert_table_sql
+from config import access_token, account_username
 from flask import request, abort
 
 def add_assets(file):

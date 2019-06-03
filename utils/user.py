@@ -1,5 +1,4 @@
 import sys, os, json
-from pgsql import conn, cur
 from utils import NONE_WORDS
 import bcrypt
 

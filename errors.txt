@@ -1,0 +1,1 @@
+- remove red underline in sublime text: Press. F6 or go View -> click spell check.

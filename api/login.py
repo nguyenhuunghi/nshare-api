@@ -2,7 +2,6 @@ import sys, os, json, requests
 from datetime import datetime, timedelta
 from flask_restful import Resource
 from flask import Flask, request, abort, jsonify
-from utils.pgsql import conn, cur
 from utils import TRUE_WORDS, FALSE_WORDS, NONE_WORDS, JWT_SECRET, JWT_ALGORITHM,  auth
 from utils.user import hash_password
 import bcrypt

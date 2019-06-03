@@ -4,20 +4,13 @@ from werkzeug.exceptions import HTTPException
 from flask import Flask, abort, request, jsonify, Response, make_response
 from flask_restful import Resource
 from flask_restful.utils import cors
-from utils import TRUE_WORDS, FALSE_WORDS, NONE_WORDS
-from utils.login import do_the_login, login_success
-from utils.pgsql import conn, cur, create_table_sql, insert_table_sql
-from utils.api import add_assets, get_assets
-from utils.user import hash_password, verify_email
 from functools import wraps
-from utils import auth
-
+from utils import auth, pgsql, TRUE_WORDS, FALSE_WORDS, NONE_WORDS
 
 class User(Resource):
+    __tablename__ = 'user' 
 
-    key = 'user' 
-
-    user = {
+    columns = {
         'id': 'int',
         'full_name': 'string',
         'email': 'string',
@@ -27,10 +20,7 @@ class User(Resource):
         'assets': 'string'
     }
 
-    try:
-        create_table_sql(key,user)
-    except:
-        pass
+    # pgsql.init_db(__tablename__, columns)
 
     # @auth.requires_auth
     def get(self):
@@ -52,7 +42,7 @@ class User(Resource):
             'assets': raw_data['assets'],
             'user_created': str(time.time())
         }
-        if insert_table_sql(self.key, user) == False: return abort(500, 'Create a new account wrong!')
+        if pgsql.insert_table_sql(self.key, user) == False: return abort(500, 'Create a new account wrong!')
         try:
             cur.execute('SELECT id, full_name, email FROM _user WHERE email={};'.format(user['email']))
             user = cur.fetchone()
