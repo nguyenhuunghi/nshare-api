@@ -25,7 +25,6 @@ class Blog(Resource):
 
 class Collection(Blog):
     def get(self):
-        print 'sadeas', dir(self.db)
         sql = 'SELECT id, date, intro_text FROM {}'.format(self.__table__);
         data = self.db.query(sql)
         blogs = []

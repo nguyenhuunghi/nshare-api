@@ -1,6 +1,6 @@
-import sys
+import sys, os
 
-# run postgres at heroku
+# run postgres on heroku
 # conn = db.conn("host='ec2-54-197-253-122.compute-1.amazonaws.com' dbname='df3192mkr3k3ch' user='egtavjsibewktj' password='51fa705edf6ebe7f7e7e3f2223b9768386741a7d91bc731931820e2c7dc8f95d'")
 
 # run postgres at local
@@ -15,3 +15,27 @@ token_type = 'bearer'
 refresh_token = '89ce098cb74c037800eb98c673ec560e5778daaf'
 account_username = 'huunghi'
 account_id = '90815005'
+
+class Development:
+    ''' 
+    Development enviroment configuration
+    '''
+    DEBUG = True
+    TESTING = False
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+
+class Production:
+    """
+    Production enviroment configuration
+    """
+    DEBUG = False
+    TESTING = False
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+
+app_config = {
+    'development' : Development,
+    'production' : Production
+}
+        

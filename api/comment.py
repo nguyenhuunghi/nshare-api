@@ -60,20 +60,21 @@ class Item(Comment):
         self.db.insert_table_sql(self.__tablename__, fields, data)
         return jsonify({'message': 'successful'})
 
-    def put(self, comment_id):
+    def put(self, id):
         raw_data = request.get_json()
         if raw_data and raw_data.has_key('comment_text') and raw_data.has_key('blog_id'):
             raw_data['date_created'] =  str(int(time.time()))
             fields = ['date_created', 'comment_text']
-            condition = 'id={}'.format(comment_id)
+            condition = 'id={}'.format(id)
             self.db.update_table_sql(self.__tablename__, fields, raw_data, condition)
         return jsonify({'message': 'successful'})
 
-    def delete(self, comment_id):
+    def delete(self, id):
         raw_data = api.query_string(request)
+        print('raw_data', raw_data)
         if raw_data:
-            sql = 'DELETE FROM {} WHERE id={};'.format(self.__tablename__, comment_id)
-            self.db.execute(conn, sql)
+            sql = 'DELETE FROM {} WHERE id={};'.format(self.__tablename__, raw_data.get('comment_id'))
+            self.db.execute(sql)
         else:
             return abort(400, 'Something wrong')
         return jsonify({'message': 'successful'})

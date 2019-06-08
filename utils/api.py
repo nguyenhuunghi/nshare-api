@@ -39,5 +39,7 @@ def delete_assets(deleteHash):
     return response
     
 def query_string(request):
-    if request.query_string.split('&'): return request.query_string.split('&')
+    _query = request.query_string
+    if _query and type(_query) != str:
+        _query = _query.decode('utf-8')
     else: return None

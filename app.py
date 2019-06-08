@@ -1,30 +1,32 @@
 import sys, os, json
 # import framoworks
-from flask import Flask, jsonify, request
-from flask_restful import Api, Resource, reqparse
+from flask import Flask, request
+from flask_restful import Api
 from flask_cors import CORS, cross_origin
+# import config
+from config import app_config
 # import api and utils
 from api.user import User
 from api.login import Login
 from api.task import Task, Field
 from api import blog, comment, assets
-from utils import auth
 
-app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
-app.debug = True
-app.config['CORS_HEADERS'] = 'Content-Type'
-app.config['TESTING'] = True
-app.config['DEBUG'] = True
-app.config['ENV'] = 'development'
-# @app.errorhandler(auth.AuthError)
-# def handle_auth_error(ex):
-#     response = jsonify(ex.error)
-#     response.status_code = ex.status_code
-#     return response
-# @auth.requires_auth
+class Createapp:
+    def create_app(env_name):
+        # app initliazation
+        app = Flask(__name__)
+        CORS(app, resources={r"/*": {"origins": "*"}})
+        app.config.from_object(app_config[os.getenv('FLASK_ENV')])
+        print('create_app')
+        @app.route('/', methods=['GET'])
+        def index():
+            return 'Congratulations'
+        return app
+
+env_name = os.getenv('FLASK_ENV')
+app = Createapp.create_app(env_name)
 api = Api(app)
-# Controller API
+# resource API
 api.add_resource(User, '/user')
 api.add_resource(Login, '/login')
 api.add_resource(Task, '/task')
@@ -38,5 +40,5 @@ api.add_resource(comment.ReplyComment, '/comment/<string:id>/reply_comment', end
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="127.0.0.1", port=port, debug=True)
+    # run app
+    app.run()
